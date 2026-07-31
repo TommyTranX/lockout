@@ -2,7 +2,7 @@ PY ?= .venv/bin/python
 LOCKOUT ?= .venv/bin/lockout
 ASSETS = https://raw.githubusercontent.com/datahub-project/static-assets/main/datasets/nyc-taxi
 
-.PHONY: help judge install data quickstart ingest seed arm permit demo counterfactual test clean nuke
+.PHONY: help judge install data quickstart ingest seed arm permit demo film counterfactual test clean nuke
 
 help:
 	@grep -E '^[a-z-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -37,6 +37,9 @@ arm: ## Evaluate the rules and write them into DataHub as assertions
 
 permit: ## Ask for a training permit (exits 1 when DENIED, which is the point)
 	-$(LOCKOUT) permit
+
+film: ## Paced walkthrough for screen recording (PAUSE=6 by default)
+	./scripts/film.sh
 
 demo: ## The full story: blocked run, then the forced run, then the comparison
 	@echo "\n=== 1. environment ==="
