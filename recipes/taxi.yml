@@ -1,0 +1,27 @@
+# Ingests DataHub's own nyc_taxi_pipeline.db sample database.
+#
+# This is the dataset that ships with a *planted* defect: staging_trips lags
+# raw_trips, and one day's load collapses to near-zero rows. DataHub's own README
+# for it says the staleness is "invisible in metadata — you can only detect it by
+# querying the actual data timestamps." That is precisely the gap Lockout closes.
+source:
+  type: sqlalchemy
+  config:
+    # Relative to the repo root; `lockout seed` rewrites this to an absolute path.
+    connect_uri: "sqlite:///data/nyc_taxi_pipeline.db"
+    platform: sqlite
+    include_tables: true
+    include_views: true
+    # DataHub's own recipe disables view lineage for this dataset, so the raw ->
+    # staging -> mart edges do not come from ingestion. Lockout emits them itself
+    # (see seed/lineage.py), including the column-level FineGrainedLineage that the
+    # gate reads.
+    include_view_lineage: false
+    include_view_column_lineage: false
+    profiling:
+      enabled: false
+
+sink:
+  type: datahub-rest
+  config:
+    server: "${DATAHUB_GMS_URL:-http://localhost:8080}"
