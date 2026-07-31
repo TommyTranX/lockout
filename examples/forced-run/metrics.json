@@ -1,0 +1,22 @@
+{
+  "run_id": "run-1785507810",
+  "trained": true,
+  "reason": "completed",
+  "rows_used": 41,
+  "train_rows": 30,
+  "test_rows": 11,
+  "mae": 192514.62363182477,
+  "rmse": 374750.36535491224,
+  "wall_clock_s": 0.109,
+  "feature_columns": [
+    "trip_count",
+    "avg_fare",
+    "avg_distance",
+    "avg_passengers",
+    "avg_duration_min"
+  ],
+  "date_range": [
+    "2015-01-01",
+    "2016-03-01"
+  ]
+}

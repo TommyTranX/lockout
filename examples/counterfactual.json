@@ -1,0 +1,39 @@
+{
+  "method": "Same GradientBoostingRegressor(random_state=0, n_estimators=200, max_depth=3), same features, scored on the same holdout taken from the clean database. Holdout dates are excluded from both training sets. The only difference between arms is whether the training data carried the pipeline defect.",
+  "holdout_rows": 11,
+  "holdout_range": [
+    "2016-01-01",
+    "2016-03-10"
+  ],
+  "silent_data_loss": {
+    "staging_rows_clean": 248315,
+    "staging_rows_stale": 208675,
+    "rows_missing": 39640,
+    "rows_missing_pct": 15.96,
+    "mart_days_clean": 42,
+    "mart_days_stale": 41
+  },
+  "arms": [
+    {
+      "label": "clean pipeline",
+      "db": "data/nyc_taxi.db",
+      "train_rows": 31,
+      "mae": 243287.02251231737,
+      "rmse": 411253.11903706176
+    },
+    {
+      "label": "stale pipeline",
+      "db": "data/nyc_taxi_pipeline.db",
+      "train_rows": 31,
+      "mae": 243287.02251231737,
+      "rmse": 411253.11903706176
+    }
+  ],
+  "delta": {
+    "mae_absolute": 0.0,
+    "mae_ratio": 1.0,
+    "rmse_absolute": 0.0
+  },
+  "training_sets_identical_after_holdout_exclusion": true,
+  "interpretation": "No metric delta, and that is the finding. Every day the stale pipeline is missing falls inside the holdout window, so once holdout dates are excluded from both arms the two training sets are identical and the models are byte-for-byte equivalent. At this dataset's granularity \u2014 42 daily rows across 15 months \u2014 a degradation claim is not supportable, and one is not made.\n\nWhat IS measured, and is the actual harm: the stale pipeline silently dropped 39,640 of 248,315 staging rows (15.96%) and 9 days of recency, and BOTH runs complete successfully while reporting plausible metrics. That is precisely what makes this failure mode dangerous: nothing downstream looks wrong. Lockout's claim is not that it produces a better model \u2014 it is that it refuses to produce a model nobody can tell is broken."
+}

@@ -43,7 +43,8 @@ class Evidence:
 
     def summary(self) -> str:
         where = f"{urns.table_of(self.dataset_urn)}.{self.column}" if self.column else urns.table_of(self.dataset_urn)
-        return f"{self.rule} failed on {where} ({self.hops} hops upstream)"
+        hop_word = "hop" if self.hops == 1 else "hops"
+        return f"{self.rule} failed on {where} ({self.hops} {hop_word} upstream)"
 
 
 @dataclass
@@ -187,7 +188,9 @@ def request_permit(model_urn: str | None = None) -> Permit:
             evidence.append(
                 Evidence(
                     assertion_urn=a["urn"],
-                    rule=(a["type"] or "ASSERTION"),
+                    # DataHub reports every custom assertion's `type` as CUSTOM, so the
+                    # specific rule is recovered from the description Lockout wrote.
+                    rule=_rule_from(a),
                     dataset_urn=dataset_urn,
                     column=a["field"],
                     description=a["description"] or "",
@@ -208,6 +211,23 @@ def request_permit(model_urn: str | None = None) -> Permit:
         features_checked=features,
         elapsed_ms=elapsed,
     )
+
+
+def _rule_from(assertion: dict[str, Any]) -> str:
+    """Recover the rule name from an assertion Lockout wrote.
+
+    `upsertCustomAssertion` stores every custom assertion with `type: CUSTOM`, so the
+    original rule is not readable from the type field. Lockout writes descriptions of
+    the form "Freshness check on <table>.<column>", which carry it.
+    """
+    description = (assertion.get("description") or "").strip()
+    first = description.split(" ", 1)[0].upper()
+    known = {"FRESHNESS", "VOLUME", "NULL_RATE", "SCHEMA"}
+    if first in known:
+        return first
+    if first == "NULL":  # "Null_rate check on ..." splits awkwardly
+        return "NULL_RATE"
+    return assertion.get("type") or "ASSERTION"
 
 
 def _path_to(model_urn: str, dataset_urn: str, details: list[dict[str, Any]]) -> list[str]:

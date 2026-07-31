@@ -1,0 +1,7 @@
+watching MetadataChangeLog_Versioned_v1 for 3 armed datasets
+  (no polling loop — this is DataHub's own change stream)
+
+MCL UPSERT datasetProperties on main.staging_trips (update)
+    re-evaluated 5 assertions — 2 failing
+
+saw 1 relevant change(s)

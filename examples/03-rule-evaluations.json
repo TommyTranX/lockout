@@ -1,0 +1,79 @@
+[
+  {
+    "rule": "FRESHNESS",
+    "table": "staging_trips",
+    "column": "trip_date",
+    "passed": false,
+    "observed": 9,
+    "threshold": 2,
+    "detail": "staging_trips has data through 2016-03-01, but raw_trips has data through 2016-03-10 \u2014 9 days behind (limit 2)",
+    "sql": "SELECT (SELECT MAX(trip_date) FROM staging_trips) AS downstream_max,\n       (SELECT MAX(tpep_pickup_datetime) FROM raw_trips) AS upstream_max",
+    "native": {
+      "lag_days": "9",
+      "downstream_max": "2016-03-01",
+      "upstream_max": "2016-03-10",
+      "max_lag_days": "2"
+    }
+  },
+  {
+    "rule": "VOLUME",
+    "table": "staging_trips",
+    "column": "trip_date",
+    "passed": false,
+    "observed": 2,
+    "threshold": 225,
+    "detail": "staging_trips loaded 2 rows on 2016-02-25, against a median daily volume of 2257 \u2014 below the floor of 225",
+    "sql": "SELECT trip_date AS d, COUNT(*) AS n FROM staging_trips\nGROUP BY trip_date ORDER BY d",
+    "native": {
+      "worst_day": "2016-02-25",
+      "worst_day_rows": "2",
+      "median_daily_rows": "2257",
+      "floor": "225"
+    }
+  },
+  {
+    "rule": "NULL_RATE",
+    "table": "staging_trips",
+    "column": "fare_amount",
+    "passed": true,
+    "observed": 0.0,
+    "threshold": 0.05,
+    "detail": "staging_trips.fare_amount is 0.00% null across 208675 rows (limit 5%)",
+    "sql": "SELECT COUNT(*) AS total, SUM(CASE WHEN fare_amount IS NULL THEN 1 ELSE 0 END) AS nulls FROM staging_trips",
+    "native": {
+      "null_rate": "0.000000",
+      "null_count": "0",
+      "row_count": "208675"
+    }
+  },
+  {
+    "rule": "NULL_RATE",
+    "table": "staging_trips",
+    "column": "trip_distance",
+    "passed": true,
+    "observed": 0.0,
+    "threshold": 0.05,
+    "detail": "staging_trips.trip_distance is 0.00% null across 208675 rows (limit 5%)",
+    "sql": "SELECT COUNT(*) AS total, SUM(CASE WHEN trip_distance IS NULL THEN 1 ELSE 0 END) AS nulls FROM staging_trips",
+    "native": {
+      "null_rate": "0.000000",
+      "null_count": "0",
+      "row_count": "208675"
+    }
+  },
+  {
+    "rule": "NULL_RATE",
+    "table": "staging_trips",
+    "column": "passenger_count",
+    "passed": true,
+    "observed": 0.0,
+    "threshold": 0.05,
+    "detail": "staging_trips.passenger_count is 0.00% null across 208675 rows (limit 5%)",
+    "sql": "SELECT COUNT(*) AS total, SUM(CASE WHEN passenger_count IS NULL THEN 1 ELSE 0 END) AS nulls FROM staging_trips",
+    "native": {
+      "null_rate": "0.000000",
+      "null_count": "0",
+      "row_count": "208675"
+    }
+  }
+]

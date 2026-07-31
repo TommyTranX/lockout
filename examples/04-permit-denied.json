@@ -1,0 +1,170 @@
+{
+  "verdict": "DENIED",
+  "model_urn": "urn:li:mlModel:(urn:li:dataPlatform:lockout,taxi_demand_v1,PROD)",
+  "decided_at_ms": 1785508436797,
+  "elapsed_ms": 538,
+  "upstream_datasets": [
+    "urn:li:dataset:(urn:li:dataPlatform:sqlite,main.raw_trips,PROD)",
+    "urn:li:dataset:(urn:li:dataPlatform:sqlite,main.staging_trips,PROD)"
+  ],
+  "features_checked": [
+    "urn:li:mlFeature:(taxi_features,trips_7d)",
+    "urn:li:mlFeature:(taxi_features,avg_fare_7d)",
+    "urn:li:mlFeature:(taxi_features,avg_distance_7d)",
+    "urn:li:mlFeature:(taxi_features,avg_duration_7d)",
+    "urn:li:mlFeature:(taxi_features,passenger_mean_7d)",
+    "urn:li:mlFeature:(taxi_features,revenue_7d)"
+  ],
+  "evidence": [
+    {
+      "assertion_urn": "urn:li:assertion:4be40bde-8885-4311-bb8a-0accacfbd217",
+      "rule": "FRESHNESS",
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:sqlite,main.staging_trips,PROD)",
+      "column": "trip_date",
+      "description": "Freshness check on staging_trips.trip_date",
+      "observed": {
+        "threshold": "2",
+        "max_lag_days": "2",
+        "lag_days": "9",
+        "upstream_max": "2016-03-10",
+        "downstream_max": "2016-03-01",
+        "observed": "9"
+      },
+      "lineage_path": [
+        "mlModel:taxi_demand_v1",
+        "mlFeature:trips_7d",
+        "dataset:main.staging_trips"
+      ],
+      "hops": 1,
+      "features_affected": [
+        "trips_7d"
+      ],
+      "transform_sql": null
+    },
+    {
+      "assertion_urn": "urn:li:assertion:ad742141-13db-4e5e-8c89-4d30181db58e",
+      "rule": "VOLUME",
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:sqlite,main.staging_trips,PROD)",
+      "column": "trip_date",
+      "description": "Volume check on staging_trips.trip_date",
+      "observed": {
+        "worst_day_rows": "2",
+        "threshold": "225",
+        "floor": "225",
+        "worst_day": "2016-02-25",
+        "observed": "2",
+        "median_daily_rows": "2257"
+      },
+      "lineage_path": [
+        "mlModel:taxi_demand_v1",
+        "mlFeature:trips_7d",
+        "dataset:main.staging_trips"
+      ],
+      "hops": 1,
+      "features_affected": [
+        "trips_7d"
+      ],
+      "transform_sql": null
+    },
+    {
+      "assertion_urn": "urn:li:assertion:423dbe7c-5999-49a5-b52c-192f81332460",
+      "rule": "VOLUME",
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:sqlite,main.staging_trips,PROD)",
+      "column": "trip_date",
+      "description": "Volume check on staging_trips.trip_date",
+      "observed": {
+        "worst_day_rows": "2",
+        "threshold": "225",
+        "floor": "225",
+        "worst_day": "2016-02-25",
+        "observed": "2",
+        "median_daily_rows": "2257"
+      },
+      "lineage_path": [
+        "mlModel:taxi_demand_v1",
+        "mlFeature:trips_7d",
+        "dataset:main.staging_trips"
+      ],
+      "hops": 1,
+      "features_affected": [
+        "trips_7d"
+      ],
+      "transform_sql": null
+    },
+    {
+      "assertion_urn": "urn:li:assertion:7e81551f-275f-4a4d-ae38-2047a9d43402",
+      "rule": "FRESHNESS",
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:sqlite,main.staging_trips,PROD)",
+      "column": "trip_date",
+      "description": "Freshness check on staging_trips.trip_date",
+      "observed": {
+        "threshold": "2",
+        "max_lag_days": "2",
+        "lag_days": "9",
+        "upstream_max": "2016-03-10",
+        "downstream_max": "2016-03-01",
+        "observed": "9"
+      },
+      "lineage_path": [
+        "mlModel:taxi_demand_v1",
+        "mlFeature:trips_7d",
+        "dataset:main.staging_trips"
+      ],
+      "hops": 1,
+      "features_affected": [
+        "trips_7d"
+      ],
+      "transform_sql": null
+    },
+    {
+      "assertion_urn": "urn:li:assertion:172849b1-8fb4-47d9-91d6-bfd8daeb7573",
+      "rule": "FRESHNESS",
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:sqlite,main.staging_trips,PROD)",
+      "column": "trip_date",
+      "description": "Freshness check on staging_trips.trip_date",
+      "observed": {
+        "threshold": "2",
+        "max_lag_days": "2",
+        "lag_days": "9",
+        "upstream_max": "2016-03-10",
+        "downstream_max": "2016-03-01",
+        "observed": "9"
+      },
+      "lineage_path": [
+        "mlModel:taxi_demand_v1",
+        "mlFeature:trips_7d",
+        "dataset:main.staging_trips"
+      ],
+      "hops": 1,
+      "features_affected": [
+        "trips_7d"
+      ],
+      "transform_sql": null
+    },
+    {
+      "assertion_urn": "urn:li:assertion:f5ba8483-98c7-44d2-8068-90d89687a8d8",
+      "rule": "VOLUME",
+      "dataset_urn": "urn:li:dataset:(urn:li:dataPlatform:sqlite,main.staging_trips,PROD)",
+      "column": "trip_date",
+      "description": "Volume check on staging_trips.trip_date",
+      "observed": {
+        "worst_day_rows": "2",
+        "threshold": "225",
+        "floor": "225",
+        "worst_day": "2016-02-25",
+        "observed": "2",
+        "median_daily_rows": "2257"
+      },
+      "lineage_path": [
+        "mlModel:taxi_demand_v1",
+        "mlFeature:trips_7d",
+        "dataset:main.staging_trips"
+      ],
+      "hops": 1,
+      "features_affected": [
+        "trips_7d"
+      ],
+      "transform_sql": null
+    }
+  ]
+}

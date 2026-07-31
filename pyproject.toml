@@ -7,8 +7,11 @@ requires-python = ">=3.11,<3.12"
 license = { text = "Apache-2.0" }
 
 dependencies = [
+    # Pinned: 1.6.0.16 is the version every write path in this repo was verified
+    # against. Note that installing `datahub-agent-context` silently downgrades this
+    # to 1.6.0.6, which removes `datahub.api.entities.agent` entirely — hence the pin
+    # and hence the kit living in an optional extra rather than here.
     "acryl-datahub[datahub-rest,sqlalchemy]==1.6.0.16",
-    "datahub-agent-context>=1.6.0",
     "confluent-kafka>=2.5.0",
     "fastavro>=1.9.0",
     "duckdb>=1.0.0",
@@ -22,6 +25,9 @@ dependencies = [
 [project.optional-dependencies]
 narrate = ["anthropic>=0.40.0"]
 dev = ["pytest>=8.0.0"]
+# Optional because it conflicts with the pinned acryl-datahub above. Install with
+# `--prerelease=allow` if you want the Agent Context Kit read path.
+agent-context = ["datahub-agent-context>=1.6.0"]
 
 [project.scripts]
 lockout = "lockout.cli:app"
