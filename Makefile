@@ -35,8 +35,8 @@ seed: ## Emit the ML subgraph, lineage, and structured properties
 arm: ## Evaluate the rules and write them into DataHub as assertions
 	$(LOCKOUT) arm
 
-permit: ## Ask for a training permit
-	$(LOCKOUT) permit
+permit: ## Ask for a training permit (exits 1 when DENIED, which is the point)
+	-$(LOCKOUT) permit
 
 demo: ## The full story: blocked run, then the forced run, then the comparison
 	@echo "\n=== 1. environment ==="
