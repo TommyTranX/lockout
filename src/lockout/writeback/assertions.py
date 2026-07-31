@@ -3,21 +3,33 @@
 Open-source DataHub models assertions well but ships no scheduler — nothing evaluates
 them on a cadence. Lockout is that scheduler for the checks it arms.
 
-Two workarounds live here, both verified against GMS v1.5.0.6:
+Both halves of this module — creating an assertion and recording its result — are done
+by **emitting aspects**, not by calling the GraphQL mutations that nominally exist for
+the purpose. That is not a stylistic choice; the mutation path is unusable here for
+four independent reasons, each verified against OSS GMS v1.5.0.6 and written up in
+docs/UPSTREAM_PRS.md:
 
-1. `DataHubGraph.report_assertion_result()` is unusable on open source. The SDK
-   (acryl-datahub 1.6.0.16) sends a `severity` field typed `AssertionResultSeverity`,
-   which the OSS GraphQL schema does not define, so every call fails validation:
+1. `upsertCustomAssertion` returns **403 Unauthorized on a freshly booted quickstart**.
+   It only begins working after somebody logs into the UI, which bootstraps the actor's
+   policies — so anyone cloning this repo and running `make judge` on a clean install
+   would fail at the first assertion. This was caught by a cold-clone rehearsal, not in
+   normal development, because a long-running dev instance has always been logged into.
+
+2. `DataHubGraph.report_assertion_result()` sends a `severity` field typed
+   `AssertionResultSeverity`, which the OSS GraphQL schema does not define:
 
        Unknown type 'AssertionResultSeverity'
        argument 'result' contains a field not in 'AssertionResultInput': 'severity'
 
-   We issue the mutation directly without `severity`. Filed upstream — see
-   docs/UPSTREAM_PRS.md.
+3. `reportAssertionResult` cannot service a **column-scoped** assertion at all:
+   `fieldPath` makes `asserteeUrn` a `schemaField`, but `assertionRunEvent` validation
+   requires a `dataset`.
 
-2. `upsertCustomAssertion` returns before the assertion is resolvable, so an immediate
-   `reportAssertionResult` fails with "does not exist or is not associated with any
-   entity" even though it does exist. We retry with backoff.
+4. `upsertCustomAssertion` returns before the assertion is resolvable, so an immediate
+   report fails with "does not exist or is not associated with any entity".
+
+Aspect emission goes through the REST sink, needs no auth on a default quickstart,
+produces the same entities, and is immune to all four.
 """
 
 from __future__ import annotations
@@ -27,78 +39,85 @@ import time
 from lockout import config, graph, urns
 from lockout.policy.rules import RuleResult
 
-_UPSERT = """
-mutation($entityUrn:String!, $type:String!, $description:String!, $platform:String!,
-         $field:String, $logic:String){
-  upsertCustomAssertion(input:{
-    entityUrn:$entityUrn, type:$type, description:$description,
-    platform:{ name:$platform }, fieldPath:$field, logic:$logic
-  }){ urn }
-}
-"""
-
-_REPORT = """
-mutation($urn:String!, $ts:Long!, $type:AssertionResultType!,
-         $props:[StringMapEntryInput!]){
-  reportAssertionResult(urn:$urn, result:{
-    timestampMillis:$ts, type:$type, properties:$props
-  })
-}
-"""
-
-
 def upsert(result: RuleResult) -> str:
-    """Create or update the assertion corresponding to a rule, return its URN."""
-    dataset_urn = urns.dataset(_qualified(result.table))
-    data = graph.gql(
-        _UPSERT,
-        {
-            "entityUrn": dataset_urn,
-            "type": result.rule,
-            "description": result.assertion_description,
-            "platform": "Lockout",
-            "field": result.column,
-            "logic": result.sql,
-        },
-    )
-    return data["upsertCustomAssertion"]["urn"]
+    """Create or update the assertion corresponding to a rule, return its URN.
 
+    Emitted as an `assertionInfo` aspect rather than through the `upsertCustomAssertion`
+    GraphQL mutation. The mutation returns **403 Unauthorized on a freshly booted
+    quickstart** — it only starts working once someone has logged into the UI, which
+    bootstraps the actor's policies:
 
-def report(assertion_urn: str, result: RuleResult, retries: int = 6) -> bool:
-    """Record a run result, retrying while the assertion settles.
+        {'message': 'Unauthorized to perform this action.',
+         'path': ['upsertCustomAssertion'], 'extensions': {'code': 403}}
 
-    Falls back to emitting the `assertionRunEvent` aspect directly, because
-    `reportAssertionResult` cannot service column-scoped assertions at all — see
-    `_report_via_aspect`.
+    A judge cloning this repo and running `make judge` would hit that on a clean
+    install. Aspect emission goes through the REST sink, needs no auth on the default
+    quickstart, and yields the same entity — so the whole arming path is auth-free.
+
+    The URN is derived deterministically from (table, column, rule) so re-arming
+    updates the existing assertion instead of creating duplicates.
     """
-    props = [{"key": k, "value": str(v)} for k, v in result.native.items()]
-    props.append({"key": "observed", "value": str(result.observed)})
-    props.append({"key": "threshold", "value": str(result.threshold)})
+    import datahub.metadata.schema_classes as models
+    from datahub.emitter.mcp import MetadataChangeProposalWrapper as MCP
 
-    last: Exception | None = None
-    for attempt in range(retries):
-        try:
-            graph.gql(
-                _REPORT,
-                {
-                    "urn": assertion_urn,
-                    "ts": int(time.time() * 1000),
-                    "type": "SUCCESS" if result.passed else "FAILURE",
-                    "props": props,
-                },
+    dataset_urn = urns.dataset(_qualified(result.table))
+    assertion_urn = _assertion_urn(result)
+
+    graph.emit(
+        [
+            MCP(
+                entityUrn=assertion_urn,
+                aspect=models.AssertionInfoClass(
+                    type=models.AssertionTypeClass.CUSTOM,
+                    description=result.assertion_description,
+                    customAssertion=models.CustomAssertionInfoClass(
+                        type=result.rule,
+                        entity=dataset_urn,
+                        field=urns.field(_qualified(result.table), result.column)
+                        if result.column
+                        else None,
+                        logic=result.sql,
+                    ),
+                    source=models.AssertionSourceClass(
+                        type=models.AssertionSourceTypeClass.EXTERNAL
+                    ),
+                    lastUpdated=models.AuditStampClass(
+                        time=int(time.time() * 1000), actor=config.ACTOR
+                    ),
+                    customProperties={
+                        "lockout.rule": result.rule,
+                        "lockout.table": result.table,
+                        "lockout.column": result.column or "",
+                    },
+                ),
             )
-            return True
-        except Exception as exc:  # noqa: BLE001 - we genuinely want to retry anything
-            last = exc
-            message = str(exc)
-            if "Invalid entity type urn validation failure" in message:
-                # Column-scoped assertion: the mutation can never succeed. Not worth
-                # retrying — go straight to the aspect path.
-                return _report_via_aspect(assertion_urn, result)
-            if "does not exist" not in message:
-                raise
-            time.sleep(1.5 * (attempt + 1))
-    raise RuntimeError(f"could not report assertion result after {retries} tries: {last}")
+        ]
+    )
+    return assertion_urn
+
+
+def _assertion_urn(result: RuleResult) -> str:
+    """Stable URN so re-arming updates rather than duplicates."""
+    slug = f"{result.table}-{result.column}-{result.rule}".lower()
+    slug = "".join(ch if ch.isalnum() or ch == "-" else "-" for ch in slug)
+    return f"urn:li:assertion:lockout-{slug}"
+
+
+def report(assertion_urn: str, result: RuleResult) -> bool:
+    """Record a run result.
+
+    Goes straight to the aspect path. `reportAssertionResult` is unusable here for
+    three independent reasons, all verified against OSS GMS v1.5.0.6 and documented in
+    docs/UPSTREAM_PRS.md:
+
+      1. 403 Unauthorized on a freshly booted quickstart;
+      2. the SDK helper sends a `severity` field the OSS schema does not define;
+      3. it rejects column-scoped assertions outright, because `asserteeUrn` resolves
+         to a `schemaField` while `assertionRunEvent` requires a `dataset`.
+
+    Emitting the aspect sidesteps all three and is what actually renders run history.
+    """
+    return _report_via_aspect(assertion_urn, result)
 
 
 def _report_via_aspect(assertion_urn: str, result: RuleResult) -> bool:
