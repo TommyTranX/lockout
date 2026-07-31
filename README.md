@@ -58,7 +58,7 @@ PERMIT DENIED   for urn:li:mlModel:(urn:li:dataPlatform:lockout,taxi_demand_v1,P
           └─▶ mlFeature:trips_7d
             └─▶ dataset:main.staging_trips
       features affected: trips_7d
-      assertion: urn:li:assertion:4be40bde-8885-4311-bb8a-0accacfbd217
+      assertion: urn:li:assertion:lockout-staging-trips-trip-date-freshness
 
   ✗ VOLUME failed on main.staging_trips.trip_date (1 hop upstream)
       staging_trips loaded 2 rows on 2016-02-25, against a median daily volume of
