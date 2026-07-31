@@ -187,9 +187,16 @@ src/lockout/
 ```
 
 **No model is in the decision path.** Whether data is bad, and whether a run is blocked,
-are decided by deterministic SQL and comparisons. An LLM writes one paragraph of
-incident narrative and nothing else. A safety interlock that could be talked out of its
-decision is not a safety interlock, and numbers on screen have to be reproducible.
+are decided by deterministic SQL and comparisons. A safety interlock that could be
+talked out of its verdict is not a safety interlock, and the numbers on screen have to
+be reproducible.
+
+The one LLM call (`narrate.py`) is purely descriptive: it turns the already-computed
+facts into the paragraph a human reads at 3am, and writes it into the incident. It is
+optional — `pip install lockout[narrate]` plus `ANTHROPIC_API_KEY` — and everything
+still works without it, falling back to a deterministic summary. It is also fenced: any
+number in its output that did not appear in the input facts causes the whole narrative
+to be discarded, so it cannot invent a figure nothing measured.
 
 **URNs are built, never searched.** DataHub's search index is populated asynchronously;
 when it lags or stalls, a search-based lookup returns nothing and the caller silently

@@ -47,6 +47,19 @@ def raise_incident(permit: Permit) -> str | None:
     where = f"{urns.table_of(top.dataset_urn)}.{top.column}" if top.column else urns.table_of(top.dataset_urn)
     observed = ", ".join(f"{k}={v}" for k, v in top.observed.items())
 
+    # The only LLM call in the project, and it is purely descriptive: it turns the
+    # already-computed facts into the paragraph a human reads at 3am. It cannot change
+    # the verdict, and it falls back to the deterministic text if it is unavailable or
+    # its output contains a number nothing measured.
+    from lockout.narrate import narrate
+
+    deterministic = (
+        f"{top.description}\n\nObserved: {observed}\n\n"
+        f"Lockout denied a training permit for {permit.model_urn} because this asset is "
+        f"{top.hops} hop(s) upstream of it via {' -> '.join(top.lineage_path)}."
+    )
+    narrative = narrate(permit, deterministic)
+
     graph.emit(
         [
             MCP(
@@ -57,11 +70,10 @@ def raise_incident(permit: Permit) -> str | None:
                     else models.IncidentTypeClass.OPERATIONAL,
                     title=f"Training blocked: {where}",
                     description=(
-                        f"{top.description}\n\n"
-                        f"Observed: {observed}\n\n"
-                        f"Lockout denied a training permit for {permit.model_urn} because this "
-                        f"asset is {top.hops} hop(s) upstream of it via "
-                        f"{' -> '.join(top.lineage_path)}."
+                        f"{narrative}\n\n"
+                        f"---\nObserved: {observed}\n"
+                        f"Path: {' -> '.join(top.lineage_path)} ({top.hops} hop(s))\n"
+                        f"Blocked model: {permit.model_urn}"
                     ),
                     entities=[top.dataset_urn],
                     status=models.IncidentStatusClass(
@@ -223,8 +235,9 @@ def commit_decision(
     permit: Permit, run_id: str, metrics: dict[str, float] | None = None
 ) -> dict[str, str | None]:
     """Write the whole decision to the graph in one call."""
+    incident_urn = raise_incident(permit)
     return {
-        "incident": raise_incident(permit),
+        "incident": incident_urn,
         "run": record_run(permit, run_id, metrics),
         "receipt": write_receipt(permit, run_id),
         "state": "LOCKED" if not permit.granted else "CLEAR",
