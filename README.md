@@ -136,8 +136,10 @@ git clone https://github.com/TommyTranX/lockout && cd lockout
 make judge
 ```
 
-`make judge` boots DataHub, fetches the sample database, seeds the graph, arms the
-assertions, and runs the blocked-vs-forced comparison end to end.
+`make judge` boots DataHub, fetches the sample databases, seeds the graph, arms the
+assertions, and runs the blocked-vs-forced comparison end to end. Verified from a cold
+clone against a nuked instance — step-by-step timings in
+[docs/JUDGE_RUNBOOK.md](docs/JUDGE_RUNBOOK.md).
 
 Step by step instead:
 
