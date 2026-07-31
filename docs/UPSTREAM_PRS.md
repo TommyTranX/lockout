@@ -10,6 +10,7 @@ quietly dropped.
 
 | # | Status |
 |---|---|
+| **PR — ML sample datapack** | **OPEN PR** — [static-assets#223](https://github.com/datahub-project/static-assets/pull/223). Adds `add_ml_entities.py`: the first ML entities in any DataHub sample dataset. Real code, not a bug report. |
 | 1 & 2 — assertion reporting | **CLOSED as duplicate** of [#18674](https://github.com/datahub-project/datahub/issues/18674), fixed on `master` by [#18697](https://github.com/datahub-project/datahub/pull/18697) three days before I filed. Real bug, confirmed by a maintainer, but not a novel find. Still affects `quickstart`. |
 | 3 & 4 — Actions registry port, events/poll 500 | **OPEN** — [#18786](https://github.com/datahub-project/datahub/issues/18786) |
 | 5 — sample data vs its README | **OPEN** — [static-assets#222](https://github.com/datahub-project/static-assets/issues/222) |

@@ -11,8 +11,8 @@ category **Production ML Agents**.
 > the staleness is *"invisible in metadata — you can only detect it by querying the
 > actual data timestamps."* The **ML entities are mine**: no DataHub sample dataset
 > ships an `mlModel`, `mlFeature` or `mlFeatureTable` anywhere, so `lockout seed`
-> creates them. That seeder is being contributed upstream so the next person doesn't
-> have to write one ([docs/UPSTREAM_PRS.md](docs/UPSTREAM_PRS.md)).
+> creates them. That seeder **is** contributed upstream, so the next person doesn't have
+> to write one — [static-assets#223](https://github.com/datahub-project/static-assets/pull/223).
 
 ---
 
@@ -210,8 +210,9 @@ printing *"No datasets found"* right after a successful ingest.
 Every one of these came out of building this, not from hunting for something to file.
 Details and status in [docs/UPSTREAM_PRS.md](docs/UPSTREAM_PRS.md).
 
-| Issue | Status | What |
+| Contribution | Status | What |
 |---|---|---|
+| [static-assets#223](https://github.com/datahub-project/static-assets/pull/223) | **open PR** | `add_ml_entities.py` — the first `mlModel` / `mlFeature` / `mlFeatureTable` fixtures in any DataHub sample dataset. Makes the repo's planted staleness reachable *from a model*, which is the shape of a silent ML failure and was not otherwise testable. This is the seeder promised above, contributed back |
 | [datahub#18786](https://github.com/datahub-project/datahub/issues/18786) | **open** | The Actions quickstart points at `:8081` for the schema registry; quickstart serves it from GMS on `:8080/schema-registry/api` and nothing listens on 8081. Also reports `GET /openapi/v1/events/poll` returning HTTP 500 — the documented HTTP alternative to Kafka consumption |
 | [static-assets#222](https://github.com/datahub-project/static-assets/issues/222) | **open** | `nyc-taxi/README.md` documents a 3-day lag and a `trip_count = 0` day; the shipped database has a **9-day** lag and **no zero-count day** (the empty load presents as 2 rows) |
 | [datahub#18785](https://github.com/datahub-project/datahub/issues/18785) | **closed — duplicate** | Column-scoped custom assertions could never have results reported, and the SDK's `report_assertion_result()` was unusable on OSS. A maintainer confirmed both are real on v1.5.0.6 but had **already fixed them on `master`** ([#18697](https://github.com/datahub-project/datahub/pull/18697), merged three days before I filed). Recorded here rather than dropped — see [docs/UPSTREAM_PRS.md](docs/UPSTREAM_PRS.md) |
