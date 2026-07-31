@@ -12,7 +12,7 @@ Status is kept honest: **filed** means a link exists below.
 
 **Repo:** `acryldata/mcp-server-datahub` / `datahub-project/datahub` (Python SDK)
 **Severity:** blocks the whole assertion-reporting path on OSS
-**Status:** _to file_
+**Status:** **FILED** (reported within https://github.com/datahub-project/datahub/issues/18785)
 
 `DataHubGraph.report_assertion_result()` in `acryl-datahub==1.6.0.16` sends a `severity`
 field in `AssertionResultInput` and references the type `AssertionResultSeverity`.
@@ -46,7 +46,7 @@ directly without `severity`.
 
 **Repo:** `datahub-project/datahub`
 **Severity:** a documented feature combination that cannot work
-**Status:** _to file_
+**Status:** **FILED** — https://github.com/datahub-project/datahub/issues/18785
 
 `upsertCustomAssertion(fieldPath: "trip_date")` creates an assertion whose `asserteeUrn`
 is the **schemaField** URN. The `assertionRunEvent` aspect validator requires that same
@@ -77,7 +77,7 @@ with the parent dataset as assertee, preserving column scope on the definition.
 
 **Repo:** `datahub-project/datahub` (docs + action templates)
 **Severity:** every user following the tutorial against quickstart fails
-**Status:** _to file_
+**Status:** **FILED** — https://github.com/datahub-project/datahub/issues/18786
 
 The Actions documentation and YAML templates default to
 `${SCHEMA_REGISTRY_URL:-http://localhost:8081}`. A quickstart install serves the schema
@@ -101,7 +101,7 @@ and templates, or document the override prominently.
 
 **Repo:** `datahub-project/datahub`
 **Severity:** the documented HTTP alternative to Kafka consumption is unusable
-**Status:** _to file_
+**Status:** **FILED** (reported within https://github.com/datahub-project/datahub/issues/18786)
 
 ```
 GET /openapi/v1/events/poll               -> 500 {"error":"Internal server error occurred"}
@@ -118,7 +118,7 @@ and it fails on the default local install.
 
 **Repo:** `datahub-project/static-assets`
 **Severity:** documentation vs shipped data
-**Status:** _to file_
+**Status:** **FILED** — https://github.com/datahub-project/static-assets/issues/222
 
 `datasets/nyc-taxi/README.md` documents the planted defects in `nyc_taxi_pipeline.db` as:
 
