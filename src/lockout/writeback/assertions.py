@@ -5,9 +5,9 @@ them on a cadence. Lockout is that scheduler for the checks it arms.
 
 Both halves of this module — creating an assertion and recording its result — are done
 by **emitting aspects**, not by calling the GraphQL mutations that nominally exist for
-the purpose. That is not a stylistic choice; the mutation path is unusable here for
-four independent reasons, each verified against OSS GMS v1.5.0.6 and written up in
-docs/UPSTREAM_PRS.md:
+the purpose. That is not a stylistic choice; the mutation path is unusable for four
+independent reasons on **v1.5.0.6, which is what `datahub docker quickstart` pulls** —
+so it is what a judge running this repo will have. Written up in docs/UPSTREAM_PRS.md:
 
 1. `upsertCustomAssertion` returns **403 Unauthorized on a freshly booted quickstart**.
    It only begins working after somebody logs into the UI, which bootstraps the actor's
@@ -28,8 +28,14 @@ docs/UPSTREAM_PRS.md:
 4. `upsertCustomAssertion` returns before the assertion is resolvable, so an immediate
    report fails with "does not exist or is not associated with any entity".
 
+Reasons 2 and 3 were **fixed upstream on `master`** by
+https://github.com/datahub-project/datahub/pull/18697 (merged 2026-07-28) after I hit
+them; a maintainer confirmed as much when closing
+https://github.com/datahub-project/datahub/issues/18785 as a duplicate. They still affect
+every released build `quickstart` installs.
+
 Aspect emission goes through the REST sink, needs no auth on a default quickstart,
-produces the same entities, and is immune to all four.
+produces the same entities, and is immune to all four — on both sides of that fix.
 """
 
 from __future__ import annotations

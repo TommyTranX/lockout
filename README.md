@@ -210,14 +210,18 @@ printing *"No datasets found"* right after a successful ingest.
 Every one of these came out of building this, not from hunting for something to file.
 Details and status in [docs/UPSTREAM_PRS.md](docs/UPSTREAM_PRS.md).
 
-| # | Repo | What |
+| Issue | Status | What |
 |---|---|---|
-| 1 | `acryldata/mcp-server-datahub` | `report_assertion_result()` is unusable on OSS — the SDK sends a `severity` field typed `AssertionResultSeverity`, which the OSS GraphQL schema does not define, so every call fails validation |
-| 2 | `datahub-project/datahub` | Column-scoped custom assertions can never have results reported: `upsertCustomAssertion(fieldPath=…)` sets `asserteeUrn` to a `schemaField`, but `assertionRunEvent` validation requires a `dataset` |
-| 3 | `datahub-project/datahub` | The Actions quickstart points at `:8081` for the schema registry; quickstart serves it from `:8080/schema-registry/api` and `:8081` is closed |
-| 4 | `datahub-project/datahub` | `GET /openapi/v1/events/poll` returns HTTP 500 on a default quickstart — the documented HTTP alternative to Kafka consumption |
-| 5 | `datahub-project/static-assets` | `nyc-taxi/README.md` documents a 3-day lag and a `trip_count = 0` day; the shipped database has a **9-day** lag and **no zero-count day** (the empty load presents as 2 rows) |
-| 6 | `datahub-project/static-assets` | `add_lineage.py` / `add_metadata.py` resolve URNs by search and fail immediately after a successful ingest |
+| [datahub#18786](https://github.com/datahub-project/datahub/issues/18786) | **open** | The Actions quickstart points at `:8081` for the schema registry; quickstart serves it from GMS on `:8080/schema-registry/api` and nothing listens on 8081. Also reports `GET /openapi/v1/events/poll` returning HTTP 500 — the documented HTTP alternative to Kafka consumption |
+| [static-assets#222](https://github.com/datahub-project/static-assets/issues/222) | **open** | `nyc-taxi/README.md` documents a 3-day lag and a `trip_count = 0` day; the shipped database has a **9-day** lag and **no zero-count day** (the empty load presents as 2 rows) |
+| [datahub#18785](https://github.com/datahub-project/datahub/issues/18785) | **closed — duplicate** | Column-scoped custom assertions could never have results reported, and the SDK's `report_assertion_result()` was unusable on OSS. A maintainer confirmed both are real on v1.5.0.6 but had **already fixed them on `master`** ([#18697](https://github.com/datahub-project/datahub/pull/18697), merged three days before I filed). Recorded here rather than dropped — see [docs/UPSTREAM_PRS.md](docs/UPSTREAM_PRS.md) |
+
+Note on the third one: `datahub docker quickstart` still pulls **v1.5.0.6**, which predates
+the fix, so anyone following the documented quickstart — including a judge running this
+repo — still hits it. Lockout's aspect-emission path works on both sides of that fix.
+
+One further defect, not yet filed: `static-assets`' `add_lineage.py` / `add_metadata.py`
+resolve URNs by search and fail immediately after a successful ingest.
 
 ---
 

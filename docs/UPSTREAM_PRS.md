@@ -4,15 +4,27 @@ Every item here was hit while building Lockout. None was found by going looking 
 something to file, and each one has a reproduction, a diagnosis, and a workaround that
 is already live in this repo.
 
-Status is kept honest: **filed** means a link exists below.
+Status is kept honest, including when it goes against me: **one of these was closed as a
+duplicate of a bug DataHub had already fixed**, and that is recorded below rather than
+quietly dropped.
+
+| # | Status |
+|---|---|
+| 1 & 2 — assertion reporting | **CLOSED as duplicate** of [#18674](https://github.com/datahub-project/datahub/issues/18674), fixed on `master` by [#18697](https://github.com/datahub-project/datahub/pull/18697) three days before I filed. Real bug, confirmed by a maintainer, but not a novel find. Still affects `quickstart`. |
+| 3 & 4 — Actions registry port, events/poll 500 | **OPEN** — [#18786](https://github.com/datahub-project/datahub/issues/18786) |
+| 5 — sample data vs its README | **OPEN** — [static-assets#222](https://github.com/datahub-project/static-assets/issues/222) |
+| 6 — search-based URN discovery | not filed |
 
 ---
 
 ## 1. `report_assertion_result()` is unusable against open-source DataHub
 
 **Repo:** `acryldata/mcp-server-datahub` / `datahub-project/datahub` (Python SDK)
-**Severity:** blocks the whole assertion-reporting path on OSS
-**Status:** **FILED** (reported within https://github.com/datahub-project/datahub/issues/18785)
+**Severity:** blocks the whole assertion-reporting path on the version `quickstart` ships
+**Status:** **CLOSED — duplicate.** Reported in
+https://github.com/datahub-project/datahub/issues/18785; maintainer confirmed it is real
+on v1.5.0.6 and pointed to severity support landing in
+https://github.com/datahub-project/datahub/pull/17335, present on current `master`.
 
 `DataHubGraph.report_assertion_result()` in `acryl-datahub==1.6.0.16` sends a `severity`
 field in `AssertionResultInput` and references the type `AssertionResultSeverity`.
@@ -45,8 +57,21 @@ directly without `severity`.
 ## 2. Column-scoped custom assertions can never have run results reported
 
 **Repo:** `datahub-project/datahub`
-**Severity:** a documented feature combination that cannot work
-**Status:** **FILED** — https://github.com/datahub-project/datahub/issues/18785
+**Severity:** a documented feature combination that cannot work on v1.5.0.6
+**Status:** **CLOSED — duplicate of
+[#18674](https://github.com/datahub-project/datahub/issues/18674)**, fixed on `master` by
+[#18697](https://github.com/datahub-project/datahub/pull/18697) (merged 2026-07-28,
+three days before I filed [#18785](https://github.com/datahub-project/datahub/issues/18785)).
+
+Maintainer response, verbatim: *"this is a real bug on v1.5.0.6, but it's already fixed on
+master … That change stops `reportAssertionResult` from walking the `Asserts` graph (which
+can return a `schemaField` URN for column-scoped custom assertions) and instead resolves
+the assertee from `AssertionInfo` / `customAssertion.entity` (always the parent dataset)."*
+
+**Why the workaround stays in this repo:** `datahub docker quickstart` still pulls
+**v1.5.0.6**, which predates the fix. Anyone running the documented quickstart — including
+a hackathon judge — hits it. Lockout's aspect-emission path is version-independent and
+works on both sides of the fix.
 
 `upsertCustomAssertion(fieldPath: "trip_date")` creates an assertion whose `asserteeUrn`
 is the **schemaField** URN. The `assertionRunEvent` aspect validator requires that same
